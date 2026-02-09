@@ -10,6 +10,7 @@
  */
 
 import * as Log from '../util/logging.js';
+import { perfLogger } from '../util/performance-logger.js';
 
 const VIDEO_CODEC_NAMES = {
     1: 'avc1.42E01E',
@@ -37,17 +38,6 @@ export default class KasmVideoDecoder {
     }
 
     // ===== Public Methods =====
-    reset() {
-        Log.Debug('Resetting all video decoders due to streaming mode/quality change');
-        for (let screen of this._decoders.values()) {
-            if (screen.decoder?.state !== 'closed') {
-                screen.decoder.reset();
-            }
-        }
-        this._decoders.clear();
-        this._timestampMap.clear();
-    }
-
     decodeRect(x, y, width, height, sock, display, depth, frame_id) {
         if (this._ctl === null) {
             if (sock.rQwait("KasmVideo screen and compression-control", 2)) {
@@ -118,7 +108,11 @@ export default class KasmVideoDecoder {
     }
 
     _handleProcessVideoChunk(frame) {
-        Log.Debug('Frame ', frame);
+        // End video decode timing
+        const decodeTime = performance.now() - this._decodingStartedTime;
+        perfLogger.end('videoDecode', this._decodingStartedTime);
+
+        Log.Debug('Frame ', frame, ' - Video frame processing time: ', decodeTime);
         const metadata = this._timestampMap.get(frame.timestamp);
         if (!metadata) {
             Log.Warn('No metadata found for timestamp: ', frame.timestamp);
@@ -157,7 +151,6 @@ export default class KasmVideoDecoder {
                 pendingFrames: [],
                 decoder: new VideoDecoder({
                     output: (frame) => {
-                        Log.Debug('Video frame processing time: ', performance.now() - this._decodingStartedTime);
                         try {
                             this._handleProcessVideoChunk(frame);
                         } catch (e) {
@@ -207,7 +200,8 @@ export default class KasmVideoDecoder {
         }
 
         try {
-            this._decodingStartedTime = performance.now();
+            // Start video decode timing
+            this._decodingStartedTime = perfLogger.start('videoDecode');
 
             if (screen.pendingFrames?.length > 0) {
                 for (const frame of screen.pendingFrames)
@@ -233,7 +227,8 @@ export default class KasmVideoDecoder {
             if (sock.rQwait("KasmVideo", 5)) {
                 return [0, null];
             }
-            this._readTime = performance.now();
+            // Start frame read timing
+            this._readTime = perfLogger.start('frameRead');
 
             this._keyFrame = sock.rQshift8();
             let byte = sock.rQshift8();
@@ -246,6 +241,23 @@ export default class KasmVideoDecoder {
                     this._len |= byte << 14;
                 }
             }
+
+            // const header = sock.rQslice(0, 4);
+            //
+            // this._keyFrame = header[0];
+            // let len = header[1] & 0x7f;
+            // let bytesRead = 2;
+            // if (header[1] & 0x80) {
+            //     len |= (header[2] & 0x7f) << 7;
+            //     bytesRead++;
+            //     if (header[2] & 0x80) {
+            //         len |= header[3] << 14;
+            //         bytesRead++;
+            //     }
+            // }
+            //
+            // this._len = len;
+            // sock.rQi += bytesRead;
         }
 
         if (sock.rQwait("KasmVideo", this._len)) {
@@ -257,8 +269,9 @@ export default class KasmVideoDecoder {
         this._len = 0;
         this._keyFrame = 0;
 
-        console.log('Frame reading time: ', performance.now() - this._readTime);
-        this._readTime = 0
+        // End frame read timing
+        perfLogger.end('frameRead', this._readTime);
+        this._readTime = 0;
         return [keyFrame, data];
     }
 
