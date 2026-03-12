@@ -47,12 +47,7 @@
     <script type="module" src="app/error-handler.js"></script>
 
     <script>
-        let isInsideKasmVDI = false;
-        try {
-            isInsideKasmVDI = (window.self !== window.top);
-        } catch (e) {
-            isInsideKasmVDI = true;
-        }
+        let isInsideKasmVDI = new URLSearchParams(window.location.search).get('vdi') === '1';
     </script>
 
     <script type="module" crossorigin="use-credentials" src="app/ui_screen.js"></script>

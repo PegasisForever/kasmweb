@@ -184,10 +184,8 @@ export function eraseSetting(name) {
 
 //Are we running inside the Kasm VDI Framework
 export function isInsideKasmVDI() {
-    //TODO: We should use a more explicit way to detect we are running inside KasmVDI
-    try {
-        return window.self !== window.top;
-    } catch (e) {
-        return true;
-    }
+    // Only activate VDI integration mode when explicitly requested via
+    // query parameter (e.g. ?vdi=1), not just because we're in an iframe.
+    const params = new URLSearchParams(window.location.search);
+    return params.get('vdi') === '1';
 }

@@ -307,7 +307,7 @@ const UI = {
         UI.initSetting('shared', true);
         UI.initSetting('view_only', false);
         UI.initSetting('show_dot', false);
-        UI.initSetting('path', 'websockify');
+        UI.initSetting('path', '');
         UI.initSetting('repeaterID', '');
         UI.initSetting('reconnect', false);
         UI.initSetting('reconnect_delay', 5000);
@@ -353,7 +353,7 @@ const UI = {
                 UI.initSetting('clipboard_seamless', true);
             }
             UI.initSetting('enable_webp', true);
-            UI.initSetting('resize', 'remote');
+            UI.initSetting('resize', 'scale');
         }
 
         UI.setupSettingLabels();
