@@ -380,7 +380,10 @@ const UI = {
         UI.updateVisualState('connected');
 
         // Do this last because it can only be used on rendered elements
-        UI.rfb.focus();
+        // Don't steal focus from the parent page when embedded in an iframe
+        if (window === window.top) {
+            UI.rfb.focus();
+        }
     },
 
     initMouseButtonMapper() {
