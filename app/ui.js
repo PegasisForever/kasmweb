@@ -2328,7 +2328,9 @@ const UI = {
             // but it's expected that user grant it since Chromium 131.
             // See https://developer.chrome.com/blog/keyboard-lock-pointer-lock-permission
             if (supportsKeyboardLock) {
-                navigator.keyboard.lock();
+                navigator.keyboard.lock().catch(() => {
+                    // Silently ignore: lock() fails in iframes (not a top-level context)
+                });
             }
         }
         UI.updateFullscreenButton();

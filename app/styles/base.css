@@ -1452,7 +1452,7 @@ a:visited {
     justify-content: center;
     padding: 0;
     z-index: 1000;
-    transition: left 0.2s ease;
+    transition: none;
 }
 
 #noVNC_fullscreen_fab.noVNC_fab_inset {
