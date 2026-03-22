@@ -696,6 +696,7 @@ const UI = {
 
     addFullscreenHandlers() {
         UI.addClickHandle('noVNC_fullscreen_button', UI.toggleFullscreen);
+        UI.addClickHandle('noVNC_fullscreen_fab', UI.toggleFullscreen);
 
         window.addEventListener('fullscreenchange', UI.updateFullscreenButton);
         window.addEventListener('mozfullscreenchange', UI.updateFullscreenButton);
@@ -2334,15 +2335,22 @@ const UI = {
     },
 
     updateFullscreenButton() {
-        if (document.fullscreenElement || // alternative standard method
-            document.mozFullScreenElement || // currently working methods
+        const isFullscreen = !!(document.fullscreenElement ||
+            document.mozFullScreenElement ||
             document.webkitFullscreenElement ||
-            document.msFullscreenElement ) {
+            document.msFullscreenElement);
+        if (isFullscreen) {
             document.getElementById('noVNC_fullscreen_button')
                 .classList.add("noVNC_selected");
+            document.getElementById('noVNC_fab_maximize_icon').style.display = 'none';
+            document.getElementById('noVNC_fab_minimize_icon').style.display = '';
+            document.getElementById('noVNC_fullscreen_fab').classList.add('noVNC_fab_inset');
         } else {
             document.getElementById('noVNC_fullscreen_button')
                 .classList.remove("noVNC_selected");
+            document.getElementById('noVNC_fab_maximize_icon').style.display = '';
+            document.getElementById('noVNC_fab_minimize_icon').style.display = 'none';
+            document.getElementById('noVNC_fullscreen_fab').classList.remove('noVNC_fab_inset');
         }
         UI.updatePointerLockButton();
     },

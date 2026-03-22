@@ -1430,3 +1430,31 @@ a:visited {
   border: 1px solid #ececec;
   border-radius: 8px;
 }
+
+/* Hide the expandable side control bar */
+#noVNC_control_bar_anchor {
+  display: none !important;
+}
+
+/* Fullscreen FAB button */
+#noVNC_fullscreen_fab {
+    position: fixed;
+    bottom: 12px;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: rgba(57, 57, 57, 0.75);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 1000;
+    transition: left 0.2s ease;
+}
+
+#noVNC_fullscreen_fab.noVNC_fab_inset {
+    left: 12px;
+}
