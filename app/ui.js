@@ -74,6 +74,7 @@ const UI = {
     inhibitReconnect: true,
     reconnectCallback: null,
     reconnectPassword: null,
+    autoRetryCount: 0,
     monitors: [],
     sortedMonitors: [],
     selectedMonitor: null,
@@ -1940,6 +1941,7 @@ const UI = {
         UI.rfb.disconnect();
 
         UI.connected = false;
+        UI.autoRetryCount = 0;
 
         // Disable automatic reconnecting
         UI.inhibitReconnect = true;
@@ -1968,6 +1970,7 @@ const UI = {
             UI.reconnectCallback = null;
         }
 
+        UI.autoRetryCount = 0;
         UI.updateVisualState('disconnected');
 
         UI.openControlbar();
@@ -1976,6 +1979,7 @@ const UI = {
     connectFinished(e) {
         UI.connected = true;
         UI.inhibitReconnect = false;
+        UI.autoRetryCount = 0;
 
         let msg;
         if (UI.getSetting('encrypt')) {
@@ -2007,7 +2011,16 @@ const UI = {
         UI.monitors = [];
         UI.sortedMonitors = [];
 
-        if (!e.detail.clean) {
+        if (!e.detail.clean && !UI.inhibitReconnect && UI.autoRetryCount < 3) {
+            UI.autoRetryCount++;
+            UI.updateVisualState('reconnecting');
+            UI.showStatus(_("Connection lost, retrying (") + UI.autoRetryCount + "/3)...", 'warning');
+
+            const delay = parseInt(UI.getSetting('reconnect_delay')) || 2000;
+            UI.reconnectCallback = setTimeout(UI.reconnect, delay);
+            return;
+        } else if (!e.detail.clean) {
+            UI.autoRetryCount = 0;
             UI.updateVisualState('disconnected');
             if (wasConnected) {
                 UI.showStatus(_("Something went wrong, connection is closed"),
